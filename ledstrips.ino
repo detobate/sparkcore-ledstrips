@@ -2,13 +2,13 @@
     DEVICEID: [YOUR DEVICE ID]
     ACCESS TOKEN: [YOUR ACCESS TOKEN]
 
-    //Functions:
+    //turnLedOn
     curl https://api.spark.io/v1/devices/[YOUR DEVICE ID]/On -d access_token=[YOUR ACCESS TOKEN]
-    curl https://api.spark.io/v1/devices/[YOUR DEVICE ID]/Off -d access_token=[YOUR ACCESS TOKEN]
-    curl https://api.spark.io/v1/devices/[YOUR DEVICE ID]/dim -d access_token=[YOUR ACCESS TOKEN]
-    curl https://api.spark.io/v1/devices/[YOUR DEVICE ID]/full -d access_token=[YOUR ACCESS TOKEN]
 
-    // or pass the values for the LED strip as a webcolor in an arg value at the end
+    //turnLedOff
+    curl https://api.spark.io/v1/devices/[YOUR DEVICE ID]/Off -d access_token=[YOUR ACCESS TOKEN]
+
+    //pass the values for the LED strip as the arg value at the end
     curl https://api.spark.io/v1/devices/[YOUR DEVICE ID]/setColour -d access_token=[YOUR ACCESS TOKEN] -d "args=[WEBCOLOR]"
 
 */
@@ -62,16 +62,23 @@ void loop() {
 
 int setColour(String webcolor)
 {
-    unsigned long RGB[4];
-    parseHex(webcolor, RGB);
-    analogWrite(ledStripRedPin, RGB[0]);
-    analogWrite(ledStripGreenPin, RGB[1]);
-    analogWrite(ledStripBluePin, RGB[2]);
+
+    int idx = 0;
+    if (webcolor.startsWith("#")){
+        idx = 1;
+    }
+    String R = webcolor.substring(0+idx, 2+idx);
+    String G = webcolor.substring(2+idx, 4+idx);
+    String B = webcolor.substring(4+idx, 6+idx);
+
+    analogWrite(ledStripRedPin, strtoul(R, 0, 16));
+    analogWrite(ledStripGreenPin, strtoul(G, 0, 16));
+    analogWrite(ledStripBluePin, strtoul(B, 0, 16));
     Particle.publish("status", webcolor);
-    Particle.publish("R", RGB[0]);
-    Particle.publish("G", RGB[1]);
-    Particle.publish("B", RGB[2]);
-  return(1);
+    Particle.publish("R", R);
+    Particle.publish("G", G);
+    Particle.publish("B", B);
+    return(1);
 }
 
 
@@ -80,9 +87,9 @@ int turnOn(String foo){
     analogWrite(ledStripGreenPin, 200);
     analogWrite(ledStripBluePin, 200);
     Particle.publish("status", "on");
-    Particle.publish("R", 200);
-    Particle.publish("G", 200);
-    Particle.publish("B", 200);
+    Particle.publish("R", "200");
+    Particle.publish("G", "200");
+    Particle.publish("B", "200");
     return(1);
 }
 
@@ -91,9 +98,9 @@ int turnOnDim(String foo){
     analogWrite(ledStripGreenPin, 50);
     analogWrite(ledStripBluePin, 50);
     Particle.publish("status", "dim");
-    Particle.publish("R", 50);
-    Particle.publish("G", 50);
-    Particle.publish("B", 50);
+    Particle.publish("R", "50");
+    Particle.publish("G", "50");
+    Particle.publish("B", "50");
 
     return(1);
 }
@@ -103,9 +110,9 @@ int turnOnFull(String foo){
     analogWrite(ledStripGreenPin, 255);
     analogWrite(ledStripBluePin, 255);
     Particle.publish("status", "full");
-    Particle.publish("R", 255);
-    Particle.publish("G", 255);
-    Particle.publish("B", 255);
+    Particle.publish("R", "255");
+    Particle.publish("G", "255");
+    Particle.publish("B", "255");
     return(1);
 }
 
@@ -115,19 +122,6 @@ int turnOff(String foo){
     return(0);
 }
 
-void parseHex(String webcolor, unsigned long RGB[]){
-    int idx = 0;
-    if (webcolor.startsWith("#")){
-        idx = 1;
-    }
-    String R = webcolor.substring(0+idx, 1+idx);
-    String G = webcolor.substring(2+idx, 3+idx);
-    String B = webcolor.substring(4+idx, 5+idx);
-
-    RGB[0] = strtoul(R, 0, 16);
-    RGB[1] = strtoul(G, 0, 16);
-    RGB[2] = strtoul(B, 0, 16);
-}
 
 //private
 void resetAll(){
