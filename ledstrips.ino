@@ -14,9 +14,9 @@
 */
 
 
-int ledStripBluePin = A4;
-int ledStripRedPin = A1;
-int ledStripGreenPin = A0;
+int ledStripRedPin = D1;
+int ledStripGreenPin = D0;
+int ledStripBluePin = D2;
 
 void setup() {
 
@@ -37,6 +37,11 @@ void setup() {
     Particle.function("full", turnOnFull);
     Particle.function("dim", turnOnDim);
     Particle.function("off", turnOff);
+    Particle.function("control", control);
+    Particle.function("toggle", toggle);
+
+    Particle.variable("status", "off");
+
 
     //wait to show the cyan indication of web access
     delay(5000);
@@ -78,6 +83,9 @@ int setColour(String webcolor)
     Particle.publish("R", R);
     Particle.publish("G", G);
     Particle.publish("B", B);
+    char foo[50];
+    webcolor.toCharArray(foo,50);
+    Particle.variable("status", foo);
     return(1);
 }
 
@@ -90,6 +98,7 @@ int turnOn(String foo){
     Particle.publish("R", "200");
     Particle.publish("G", "200");
     Particle.publish("B", "200");
+    Particle.variable("status", "on");
     return(1);
 }
 
@@ -101,7 +110,7 @@ int turnOnDim(String foo){
     Particle.publish("R", "50");
     Particle.publish("G", "50");
     Particle.publish("B", "50");
-
+    Particle.variable("status", "dim");
     return(1);
 }
 
@@ -113,15 +122,34 @@ int turnOnFull(String foo){
     Particle.publish("R", "255");
     Particle.publish("G", "255");
     Particle.publish("B", "255");
+    Particle.variable("status", "full");
     return(1);
 }
 
 int turnOff(String foo){
     resetAll();
     Particle.publish("status", "off");
+    Particle.variable("status", "off");
     return(0);
 }
 
+int control(String command){
+    if (command == "on") {
+        return(turnOn("foo"));
+    }
+    else if (command == "off") {
+        return(turnOff("foo"));
+    }
+    else if (command == "toggle") {
+        return(toggle("foo"));
+    }
+    else {
+        return(setColour(command));
+    }
+}
+
+int toggle(String foo){
+}
 
 //private
 void resetAll(){
